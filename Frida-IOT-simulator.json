@@ -1,0 +1,334 @@
+[
+    {
+        "id": "814c02ba.af8ba",
+        "type": "tab",
+        "label": "IOT Frida flow",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "c1b510e3.c48be",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Set Model classifier_ids",
+        "func": "msg.params={};\nmsg.params['classifier_ids']='Modeltest1_213112559';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 690,
+        "y": 240,
+        "wires": [
+            [
+                "8118f67a.32eea8"
+            ]
+        ]
+    },
+    {
+        "id": "8118f67a.32eea8",
+        "type": "visual-recognition-v3",
+        "z": "814c02ba.af8ba",
+        "name": "VR model",
+        "vr-service-endpoint": "https://gateway.watsonplatform.net/visual-recognition/api",
+        "image-feature": "classifyImage",
+        "lang": "en",
+        "x": 900,
+        "y": 240,
+        "wires": [
+            [
+                "1cade619.c47f2a"
+            ]
+        ]
+    },
+    {
+        "id": "1cade619.c47f2a",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Check Alerts",
+        "func": "var classesArray = msg.result && msg.result.images && msg.result.images[0] && msg.result.images[0].classifiers && msg.result.images[0].classifiers[0] && msg.result.images[0].classifiers[0].classes;\n\n\n// higestScoreClass structure\nvar higestScoreClass = {\n    score: 0,\n    class: \"dummy\",\n    triggerAlert: false,\n    deviceNumber: msg.deviceNumber\n};\n\n// find the highest score among returned classes\nfor (var index=0; index< classesArray.length; index++){\n    if(higestScoreClass.score < classesArray[index].score) {\n        higestScoreClass.score = classesArray[index].score;\n        higestScoreClass.class = classesArray[index].class;\n    }\n}\n\n// if something broken and confidence level is > 80 generate a alert\nif ((higestScoreClass.class === \"roomDamage\" ||\nhigestScoreClass.class === \"tableDamage\" ||\nhigestScoreClass.class === \"chairDamage\") &&\nhigestScoreClass.score > 0.80) {\n    higestScoreClass.triggerAlert = true;\n}\n\nreturn {payload: higestScoreClass};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1130,
+        "y": 240,
+        "wires": [
+            [
+                "cad9fcab.baec6",
+                "5896b9db.f620f8"
+            ]
+        ]
+    },
+    {
+        "id": "cad9fcab.baec6",
+        "type": "debug",
+        "z": "814c02ba.af8ba",
+        "name": "local file debugger",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": true,
+        "complete": "true",
+        "x": 1220,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "c01caaa7.6bbbe8",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Adding Device Info",
+        "func": "msg.deviceNumber ='sensor1';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 366.5,
+        "y": 167,
+        "wires": [
+            [
+                "c1b510e3.c48be"
+            ]
+        ]
+    },
+    {
+        "id": "e37a443.47b20b8",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Adding Device Info",
+        "func": "msg.deviceNumber ='sensor4';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 370,
+        "y": 360,
+        "wires": [
+            [
+                "c1b510e3.c48be"
+            ]
+        ]
+    },
+    {
+        "id": "e0b9b089.2ffc6",
+        "type": "comment",
+        "z": "814c02ba.af8ba",
+        "name": "Reading data from multiple iot devices",
+        "info": "",
+        "x": 650,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "4c7c5cf1.50cf34",
+        "type": "comment",
+        "z": "814c02ba.af8ba",
+        "name": "Sending socket event to client",
+        "info": "",
+        "x": 1220,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "877d7a3a.2328f8",
+        "type": "comment",
+        "z": "814c02ba.af8ba",
+        "name": "Socket Server Simulator",
+        "info": "",
+        "x": 590,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "79b5c798.692288",
+        "type": "websocket in",
+        "z": "814c02ba.af8ba",
+        "name": "",
+        "server": "b2078ef6.86787",
+        "client": "",
+        "x": 353,
+        "y": 950,
+        "wires": [
+            [
+                "da2768b2.533b38"
+            ]
+        ]
+    },
+    {
+        "id": "4bdedf17.61bb4",
+        "type": "debug",
+        "z": "814c02ba.af8ba",
+        "name": "SocketClient debug",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "x": 936.5,
+        "y": 951,
+        "wires": []
+    },
+    {
+        "id": "7ef820b8.496b",
+        "type": "comment",
+        "z": "814c02ba.af8ba",
+        "name": "Prediction on trained WS VR model",
+        "info": "",
+        "x": 720,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "da2768b2.533b38",
+        "type": "json",
+        "z": "814c02ba.af8ba",
+        "name": "Covert to Json",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 641.5,
+        "y": 950,
+        "wires": [
+            [
+                "4bdedf17.61bb4",
+                "567d2987.8a91e8"
+            ]
+        ]
+    },
+    {
+        "id": "5896b9db.f620f8",
+        "type": "websocket out",
+        "z": "814c02ba.af8ba",
+        "name": "",
+        "server": "6bb12d87.beb304",
+        "client": "",
+        "x": 1210,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "4f9b309a.a8cb6",
+        "type": "fileinject",
+        "z": "814c02ba.af8ba",
+        "name": "local_images (Device1)",
+        "x": 120,
+        "y": 160,
+        "wires": [
+            [
+                "c01caaa7.6bbbe8"
+            ]
+        ]
+    },
+    {
+        "id": "bb535aef.f75f48",
+        "type": "camera",
+        "z": "814c02ba.af8ba",
+        "name": "Webcam (Device 4)",
+        "x": 110,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "567d2987.8a91e8",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "",
+        "func": "msg._session=\"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 650,
+        "y": 1065,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "268cc7c8.f08e38",
+        "type": "fileinject",
+        "z": "814c02ba.af8ba",
+        "name": "local_images (Device2)",
+        "x": 120,
+        "y": 220,
+        "wires": [
+            [
+                "448f253b.453f3c"
+            ]
+        ]
+    },
+    {
+        "id": "448f253b.453f3c",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Adding Device Info",
+        "func": "msg.deviceNumber ='sensor2';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 370,
+        "y": 220,
+        "wires": [
+            [
+                "c1b510e3.c48be"
+            ]
+        ]
+    },
+    {
+        "id": "2dad13c3.a113ec",
+        "type": "function",
+        "z": "814c02ba.af8ba",
+        "name": "Adding Device Info",
+        "func": "msg.deviceNumber ='sensor3';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 370,
+        "y": 300,
+        "wires": [
+            [
+                "c1b510e3.c48be"
+            ]
+        ]
+    },
+    {
+        "id": "c9c31b89.b8c958",
+        "type": "fileinject",
+        "z": "814c02ba.af8ba",
+        "name": "local_images (Device3)",
+        "x": 120,
+        "y": 300,
+        "wires": [
+            [
+                "2dad13c3.a113ec"
+            ]
+        ]
+    },
+    {
+        "id": "10c3af3b.ca7031",
+        "type": "fileinject",
+        "z": "814c02ba.af8ba",
+        "name": "local_images (Device4)",
+        "x": 120,
+        "y": 360,
+        "wires": [
+            [
+                "e37a443.47b20b8"
+            ]
+        ]
+    },
+    {
+        "id": "3903f6ed.625a3a",
+        "type": "comment",
+        "z": "814c02ba.af8ba",
+        "name": "Replace above local_images node with webcam node to use sample scrrenshots from webcam",
+        "info": "",
+        "x": 330,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "b2078ef6.86787",
+        "type": "websocket-listener",
+        "z": "",
+        "path": "/ws/publishMessage",
+        "wholemsg": "true"
+    },
+    {
+        "id": "6bb12d87.beb304",
+        "type": "websocket-listener",
+        "z": "",
+        "path": "ws/receiveMessage",
+        "wholemsg": "false"
+    }
+]
